@@ -1,3 +1,3 @@
-# lab-03-nobel-laureates
+# lab-03
 
 template materials for lab
