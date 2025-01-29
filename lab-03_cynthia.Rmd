@@ -1,0 +1,124 @@
+---
+title: "Lab 03 - Nobel laureates"
+author: "Cynthia Jiao"
+date: "1/27/2025"
+output: github_document
+---
+
+### Load packages and data
+
+```{r load-packages, message=FALSE}
+library(tidyverse) 
+```
+
+```{r load-data, message=FALSE}
+nobel <- read_csv("data/nobel.csv")
+```
+
+## Exercises
+
+### Exercise 1
+
+There are 935 observations and 26 variables in the dataset. Each row represents a Nobel prize winner.
+
+```{r}
+
+print(nobel)
+
+```
+
+
+### Exercise 2
+
+```{r}
+
+library(dplyr)
+
+##create new dataset
+
+nobel_living <- nobel %>%
+  filter(!is.na(country)) %>%
+  filter(gender != "org") %>%
+  filter(is.na(died_date))
+
+##create new variable
+
+nobel_living <- nobel_living %>%
+  mutate(
+    country_us = if_else(country == "USA", "USA", "Other")
+  )
+
+nobel_living_science <- nobel_living %>%
+  filter(category %in% c("Physics", "Medicine", "Chemistry", "Economics"))
+
+```
+
+
+### Exercise 3
+
+From the graph, it seems that more winners are in USA than other countries when they win the prize. However, this graph does not necessarily support Buzzfeed article claims, because it does NOT tell us whether most of US nobel prize winners are immigrants (i.e., birthplace not in the US).
+
+```{r}
+
+ggplot(
+  data = nobel_living_science,
+  mapping = aes(
+    y = country_us,
+    color = category,
+    fill = category
+  )
+) + geom_bar() +  
+  facet_wrap(~ category)
+
+```
+
+### Exercise 4
+
+There are 123 winners who were not born in the US, and 105 who were born in the US.
+```{r}
+
+##create new variable
+
+nobel_living_science <- nobel_living_science %>%
+  mutate(
+    born_country_us = if_else(born_country_original == "USA", "USA", "Other")
+  )
+
+##counting the number of US and non US born winners
+
+table(nobel_living_science$born_country_us)
+
+```
+
+
+### Exercise 5
+
+The graph seems to show a consistent pattern with the Buzzfeed graph and support their claim. On the graph, blue bars represents winners who are in the US when winning, and the y axis shows whether these winners are US born or not. Among US winners, although there are more US born winners for each category, the numbers of non-US born winners are still considerable (e.g., for medicine and physics, non-US born winners are half the numbers of US born winners. For chemistry, non-US born winners is more than 50% of US born winners). 
+```{r}
+
+ggplot(
+  data = nobel_living_science,
+  mapping = aes(
+    y = born_country_us,
+    color = country_us,
+    fill = country_us
+  )
+) + geom_bar() +  
+  facet_wrap(~ category)
+
+```
+
+
+### Exercise 6
+
+Germany and the UK are the most common countries to have other country born, US prize winners. They each have 7.
+```{r}
+
+##create the new variable
+
+nobel_living_science %>%
+  filter(country_us == "USA", born_country_us == "Other") %>% 
+  count(born_country) %>%
+  arrange(desc(n))
+
+```
